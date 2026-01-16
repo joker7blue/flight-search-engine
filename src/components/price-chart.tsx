@@ -10,9 +10,20 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { priceTrendData } from "@/lib/mock-data";
+import { usePriceTrend } from "@/hooks/use-price-trend";
+import { FlightOffer } from "@/models/flight-offer-types";
 
-export function PriceChart() {
+interface PriceChartProps {
+  flights: FlightOffer[];
+}
+
+export function PriceChart({ flights }: PriceChartProps) {
+  const priceTrendData = usePriceTrend(flights);
+
+  if (priceTrendData.length === 0) {
+    return null;
+  }
+
   return (
     <Card className="p-6 bg-gradient-to-br from-card via-primary/5 to-secondary/5 border-border/50 shadow-lg shadow-primary/5">
       <div className="mb-6">
@@ -31,16 +42,32 @@ export function PriceChart() {
           >
             <defs>
               <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
-                <stop offset="50%" stopColor="hsl(var(--secondary))" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                <stop
+                  offset="5%"
+                  stopColor="hsl(var(--primary))"
+                  stopOpacity={0.4}
+                />
+                <stop
+                  offset="50%"
+                  stopColor="hsl(var(--secondary))"
+                  stopOpacity={0.2}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="hsl(var(--primary))"
+                  stopOpacity={0}
+                />
               </linearGradient>
               <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stopColor="hsl(var(--primary))" />
                 <stop offset="100%" stopColor="hsl(var(--secondary))" />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--primary))" opacity={0.1} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="hsl(var(--primary))"
+              opacity={0.1}
+            />
             <XAxis
               dataKey="date"
               className="text-xs"
@@ -57,7 +84,11 @@ export function PriceChart() {
                 value: "Price ($)",
                 angle: -90,
                 position: "insideLeft",
-                style: { fill: "hsl(var(--primary))", fontSize: 12, fontWeight: 600 },
+                style: {
+                  fill: "hsl(var(--primary))",
+                  fontSize: 12,
+                  fontWeight: 600,
+                },
               }}
             />
             <Tooltip
@@ -67,7 +98,23 @@ export function PriceChart() {
                 borderRadius: "var(--radius)",
                 boxShadow: "0 10px 15px -3px hsl(var(--primary) / 0.2)",
               }}
-              formatter={(value: number | undefined) => [`$${value ?? 0}`, "Price"]}
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const data = payload[0].payload;
+                  return (
+                    <div className="bg-card border-2 border-primary rounded-lg p-3 shadow-lg">
+                      <p className="font-bold text-primary mb-1">{data.date}</p>
+                      <p className="text-sm">
+                        <span className="font-semibold">Price:</span> {data.price} EUR
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        <span className="font-semibold">Airlines:</span> {data.airlines.join(", ")}
+                      </p>
+                    </div>
+                  );
+                }
+                return null;
+              }}
               labelStyle={{ color: "hsl(var(--primary))", fontWeight: 700 }}
             />
             <Line
@@ -75,18 +122,18 @@ export function PriceChart() {
               dataKey="price"
               stroke="#8B5CF6"
               strokeWidth={3}
-              dot={{ 
-                fill: "#8B5CF6", 
-                r: 5, 
-                strokeWidth: 3, 
-                stroke: "hsl(var(--primary))" 
+              dot={{
+                fill: "#8B5CF6",
+                r: 5,
+                strokeWidth: 3,
+                stroke: "hsl(var(--primary))",
               }}
-              activeDot={{ 
-                r: 8, 
-                strokeWidth: 3, 
+              activeDot={{
+                r: 8,
+                strokeWidth: 3,
                 stroke: "hsl(var(--secondary))",
                 fill: "hsl(var(--card))",
-                filter: "drop-shadow(0 0 8px hsl(var(--primary) / 0.6))"
+                filter: "drop-shadow(0 0 8px hsl(var(--primary) / 0.6))",
               }}
               fill="#8B5CF6"
             />

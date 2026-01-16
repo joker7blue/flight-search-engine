@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -8,25 +7,48 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal } from "lucide-react";
-import { airlines } from "@/lib/mock-data";
+import { useAirlines } from "@/context/airline-context";
 
-function FilterContent() {
-  const [priceRange, setPriceRange] = useState([0, 500]);
-  const [selectedStops, setSelectedStops] = useState<string[]>([]);
-  const [selectedAirlines, setSelectedAirlines] = useState<string[]>([]);
+export interface FilterData {
+  priceRange: [number, number];
+  selectedStops: string[];
+  selectedAirlines: string[];
+}
+
+interface FiltersPanelProps {
+  filterInput: FilterData;
+  setFilterInput: (data: FilterData) => void;
+}
+
+function FilterContent({ filterInput, setFilterInput }: FiltersPanelProps) {
+  const { airlines } = useAirlines();
+  const handlePriceChange = (value: number[]) => {
+    setFilterInput({
+      ...filterInput,
+      priceRange: [value[0], value[1]],
+    });
+  };
 
   const toggleStop = (stop: string) => {
-    setSelectedStops((prev) =>
-      prev.includes(stop) ? prev.filter((s) => s !== stop) : [...prev, stop]
-    );
+    const newStops = filterInput.selectedStops.includes(stop)
+      ? filterInput.selectedStops.filter((s) => s !== stop)
+      : [...filterInput.selectedStops, stop];
+
+    setFilterInput({
+      ...filterInput,
+      selectedStops: newStops,
+    });
   };
 
   const toggleAirline = (airline: string) => {
-    setSelectedAirlines((prev) =>
-      prev.includes(airline)
-        ? prev.filter((a) => a !== airline)
-        : [...prev, airline]
-    );
+    const newAirlines = filterInput.selectedAirlines.includes(airline)
+      ? filterInput.selectedAirlines.filter((a) => a !== airline)
+      : [...filterInput.selectedAirlines, airline];
+
+    setFilterInput({
+      ...filterInput,
+      selectedAirlines: newAirlines,
+    });
   };
 
   return (
@@ -35,16 +57,16 @@ function FilterContent() {
         <h3 className="text-lg font-semibold">Price Range</h3>
         <div className="space-y-3">
           <Slider
-            value={priceRange}
-            onValueChange={setPriceRange}
+            value={filterInput.priceRange}
+            onValueChange={handlePriceChange}
             min={0}
             max={500}
             step={10}
             className="w-full"
           />
           <div className="flex justify-between text-sm text-muted-foreground">
-            <span>${priceRange[0]}</span>
-            <span>${priceRange[1]}</span>
+            <span>${filterInput.priceRange[0]}</span>
+            <span>${filterInput.priceRange[1]}</span>
           </div>
         </div>
       </div>
@@ -56,7 +78,7 @@ function FilterContent() {
             <div key={stop} className="flex items-center space-x-2">
               <Checkbox
                 id={`stop-${stop}`}
-                checked={selectedStops.includes(stop)}
+                checked={filterInput.selectedStops.includes(stop)}
                 onCheckedChange={() => toggleStop(stop)}
               />
               <Label
@@ -73,18 +95,18 @@ function FilterContent() {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Airlines</h3>
         <div className="space-y-3">
-          {airlines.map((airline) => (
-            <div key={airline} className="flex items-center space-x-2">
+          {airlines?.map((airline) => (
+            <div key={airline.code} className="flex items-center space-x-2">
               <Checkbox
-                id={`airline-${airline}`}
-                checked={selectedAirlines.includes(airline)}
-                onCheckedChange={() => toggleAirline(airline)}
+                id={`airline-${airline.code}`}
+                checked={filterInput.selectedAirlines.includes(airline.code)}
+                onCheckedChange={() => toggleAirline(airline.code)}
               />
               <Label
-                htmlFor={`airline-${airline}`}
+                htmlFor={`airline-${airline.code}`}
                 className="text-sm font-normal cursor-pointer"
               >
-                {airline}
+                {airline.name} ({airline.code})
               </Label>
             </div>
           ))}
@@ -94,12 +116,18 @@ function FilterContent() {
   );
 }
 
-export function FiltersPanel() {
+export function FiltersPanel({
+  filterInput,
+  setFilterInput,
+}: FiltersPanelProps) {
   return (
     <>
       <div className="hidden md:block">
         <Card className="p-6">
-          <FilterContent />
+          <FilterContent
+            filterInput={filterInput}
+            setFilterInput={setFilterInput}
+          />
         </Card>
       </div>
 
@@ -111,9 +139,12 @@ export function FiltersPanel() {
               Filters
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] overflow-y-auto">
+          <SheetContent side="left" className="w-[300px] overflow-y-auto p-6">
             <div className="mt-6">
-              <FilterContent />
+              <FilterContent
+                filterInput={filterInput}
+                setFilterInput={setFilterInput}
+              />
             </div>
           </SheetContent>
         </Sheet>
