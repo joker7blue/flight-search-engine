@@ -67,7 +67,7 @@ export function PriceChart() {
                 borderRadius: "var(--radius)",
                 boxShadow: "0 10px 15px -3px hsl(var(--primary) / 0.2)",
               }}
-              formatter={(value: number) => [`$${value}`, "Price"]}
+              formatter={(value: number | undefined) => [`$${value ?? 0}`, "Price"]}
               labelStyle={{ color: "hsl(var(--primary))", fontWeight: 700 }}
             />
             <Line
