@@ -59,7 +59,9 @@ export function FlightCard({ flight }: { flight: FlightOffer }) {
                 </div>
                 <div>
                   <p className="font-semibold text-base">
-                    {airlineName || flight.validatingAirlineCodes.join(", ")}
+                    {flight.validatingAirlineCodes.length > 1
+                      ? flight.validatingAirlineCodes.join(", ")
+                      : airlineName}
                   </p>
                   <p className="text-sm text-muted-foreground font-semibold flex items-center gap-1">
                     {cabinClass}
@@ -151,7 +153,11 @@ export function FlightCard({ flight }: { flight: FlightOffer }) {
           isExpanded ? "max-h-[2000px] opacity-100" : "h-0! max-h-0 opacity-0"
         }`}
       >
-        <div className={`transition-transform duration-500 ${isExpanded ? "translate-y-0" : "-translate-y-4"}`}>
+        <div
+          className={`transition-transform duration-500 ${
+            isExpanded ? "translate-y-0" : "-translate-y-4"
+          }`}
+        >
           <FlightCardDetail flight={flight} />
         </div>
       </div>
