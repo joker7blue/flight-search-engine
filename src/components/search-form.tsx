@@ -86,7 +86,7 @@ export function SearchForm({
             id="departure"
             type="date"
             min={today}
-            value={formInput.departureDate}
+            value={formInput.departureDate || today}
             onChange={(e) => handleInputChange("departureDate", e.target.value)}
           />
         </div>
