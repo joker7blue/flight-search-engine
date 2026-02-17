@@ -17,7 +17,7 @@ import { AirlineProvider, useAirlines } from "@/context/airline-context";
 const initialFormData: SearchFormData = {
   origin: "JFK",
   destination: "LAX",
-  departureDate: "2026-01-25",
+  departureDate: new Date().toISOString().split("T")[0],
   returnDate: "",
   passengers: "1",
 };
